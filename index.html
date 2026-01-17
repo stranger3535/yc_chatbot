@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YC Intel Chatbot</title>
+
+    <style>
+      body {
+        font-family: Inter, Arial, sans-serif;
+        background: #0f172a;
+        color: #e5e7eb;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+      }
+
+      .chat-container {
+        width: 700px;
+        background: #020617;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+      }
+
+      h2 {
+        margin-bottom: 10px;
+        color: #38bdf8;
+      }
+
+      .examples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .example {
+        background: #1e293b;
+        border: 1px solid #334155;
+        padding: 6px 10px;
+        border-radius: 16px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #e5e7eb;
+      }
+
+      .example:hover {
+        background: #334155;
+      }
+
+      .messages {
+        min-height: 320px;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 16px;
+        padding-right: 6px;
+      }
+
+      .user {
+        color: #38bdf8;
+        margin-bottom: 6px;
+      }
+
+      .bot {
+        color: #a7f3d0;
+        margin-bottom: 14px;
+      }
+
+      .input-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+        outline: none;
+        font-size: 14px;
+      }
+
+      button {
+        padding: 10px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        background: #22c55e;
+        color: #020617;
+        font-weight: bold;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="chat-container">
+      <h2>YC Intel Chat</h2>
+
+      <!-- Example Questions -->
+      <div class="examples">
+        <div class="example" onclick="fillExample(this)">
+          Top fast-growing YC startups
+        </div>
+        <div class="example" onclick="fillExample(this)">
+          YC companies working on AI healthcare
+        </div>
+        <div class="example" onclick="fillExample(this)">
+          Recent stage changes in YC companies
+        </div>
+        <div class="example" onclick="fillExample(this)">
+          Fastest growing tags in YC
+        </div>
+        <div class="example" onclick="fillExample(this)">
+          Why did a company’s momentum increase?
+        </div>
+      </div>
+
+      <!-- Chat Messages -->
+      <div id="messages" class="messages"></div>
+
+      <!-- Input -->
+      <div class="input-row">
+        <input id="question" placeholder="Ask about YC companies..." />
+        <button onclick="send()">Send</button>
+      </div>
+    </div>
+
+    <script>
+      function fillExample(el) {
+        document.getElementById("question").value = el.innerText;
+      }
+
+      async function send() {
+        const input = document.getElementById("question");
+        const messages = document.getElementById("messages");
+        const question = input.value.trim();
+
+        if (!question) return;
+
+        messages.innerHTML += `<div class="user">You: ${question}</div>`;
+        input.value = "";
+
+        try {
+          const res = await fetch("http://127.0.0.1:8000/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question }),
+          });
+
+          if (!res.ok) throw new Error("API error");
+
+          const data = await res.json();
+          messages.innerHTML += `<div class="bot">Bot: ${data.answer}</div>`;
+          messages.scrollTop = messages.scrollHeight;
+        } catch (err) {
+          messages.innerHTML += `<div class="bot">Bot: ⚠️ Unable to reach server</div>`;
+        }
+      }
+    </script>
+  </body>
+</html>
